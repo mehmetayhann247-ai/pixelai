@@ -15,26 +15,34 @@ export async function POST(request: NextRequest) {
     const dataUrl = `data:${imageFile.type};base64,${base64}`;
 
     const response = await fetch(
-      "https://api-inference.huggingface.co/models/caidas/swin2SR-realworld-sr-x4-64-bsrgan-psnr",
+      "https://router.huggingface.co/replicate/models/nightmareai/real-esrgan/predictions",
       {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-          "Content-Type": imageFile.type,
+          "Content-Type": "application/json",
         },
-        body: imageBuffer,
+        body: JSON.stringify({
+          input: {
+            image: dataUrl,
+            scale: 2,
+            face_enhance: false,
+          }
+        }),
       }
     );
 
+    const result = await response.json();
+
     if (!response.ok) {
-      const errText = await response.text();
-      return NextResponse.json({ error: "HF hatası: " + errText }, { status: 500 });
+      return NextResponse.json({ error: "HF hatası: " + JSON.stringify(result) }, { status: 500 });
     }
 
-    const resultBuffer = await response.arrayBuffer();
-    const resultBase64 = Buffer.from(resultBuffer).toString("base64");
+    if (result.output) {
+      return NextResponse.json({ image: result.output });
+    }
 
-    return NextResponse.json({ image: `data:image/png;base64,${resultBase64}` });
+    return NextResponse.json({ error: "Sonuç yok: " + JSON.stringify(result) }, { status: 500 });
 
   } catch (err) {
     return NextResponse.json({ error: "Sunucu hatası: " + (err as Error).message }, { status: 500 });
