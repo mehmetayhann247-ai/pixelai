@@ -22,6 +22,11 @@ export default function Home() {
     setUser(null);
   };
 
+  const handleStart = () => {
+    if (user) window.location.href = "/remove-bg";
+    else window.location.href = "/auth";
+  };
+
   return (
     <main style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0f0f1a 0%, #1a0a2e 50%, #0d1117 100%)", color: "white", fontFamily: "sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "20px", position: "relative" }}>
 
@@ -49,7 +54,7 @@ export default function Home() {
         ))}
       </div>
 
-      <button onClick={() => window.location.href = "/auth"} style={{ marginTop: "48px", background: "#7c3aed", color: "white", border: "none", borderRadius: "12px", padding: "16px 40px", fontSize: "18px", cursor: "pointer" }}>
+      <button onClick={handleStart} style={{ marginTop: "48px", background: "#7c3aed", color: "white", border: "none", borderRadius: "12px", padding: "16px 40px", fontSize: "18px", cursor: "pointer" }}>
         Ücretsiz Başla →
       </button>
     </main>
