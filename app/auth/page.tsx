@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 
 export default function Auth() {
@@ -8,6 +8,12 @@ export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) window.location.href = "/";
+    });
+  }, []);
 
   const handleAuth = async () => {
     setLoading(true);
