@@ -69,6 +69,13 @@ export default function RemoveBg() {
           }}>🖼️ AI Destekli</div>
           <h1 style={{ fontSize: "40px", fontWeight: "900", marginBottom: "12px" }}>Arka Plan Kaldır</h1>
           <p style={{ color: "#9ca3af", fontSize: "17px" }}>Fotoğrafını yükle, yapay zeka arka planı saniyeler içinde siler</p>
+<div style={{
+  display: "inline-block", background: "rgba(234,179,8,0.1)",
+  border: "1px solid rgba(234,179,8,0.4)", borderRadius: "10px",
+  padding: "10px 20px", fontSize: "13px", color: "#fbbf24", marginTop: "12px"
+}}>
+  💡 İpucu: En iyi sonuç için tek bir kişi, hayvan veya ürün içeren fotoğraf kullanın
+</div>
         </div>
 
         {/* Yükleme alanı */}
