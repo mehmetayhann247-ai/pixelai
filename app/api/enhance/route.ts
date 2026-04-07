@@ -11,33 +11,30 @@ export async function POST(request: NextRequest) {
     }
 
     const imageBuffer = await imageFile.arrayBuffer();
-    const imageBlob = new Blob([imageBuffer], { type: imageFile.type });
+    const base64 = Buffer.from(imageBuffer).toString("base64");
+    const dataUrl = `data:${imageFile.type};base64,${base64}`;
 
     const response = await fetch(
-      "https://router.huggingface.co/replicate/models/nightmareai/real-esrgan/predictions",
+      "https://api-inference.huggingface.co/models/caidas/swin2SR-realworld-sr-x4-64-bsrgan-psnr",
       {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-          "Content-Type": "application/json",
+          "Content-Type": imageFile.type,
         },
-        body: JSON.stringify({
-          input: {
-            image: `data:${imageFile.type};base64,${Buffer.from(imageBuffer).toString("base64")}`,
-            scale: 2,
-            face_enhance: false,
-          }
-        }),
+        body: imageBuffer,
       }
     );
 
-    const result = await response.json();
-
-    if (result.output) {
-      return NextResponse.json({ image: result.output });
+    if (!response.ok) {
+      const errText = await response.text();
+      return NextResponse.json({ error: "HF hatası: " + errText }, { status: 500 });
     }
 
-    return NextResponse.json({ error: "İşlem başarısız: " + JSON.stringify(result) }, { status: 500 });
+    const resultBuffer = await response.arrayBuffer();
+    const resultBase64 = Buffer.from(resultBuffer).toString("base64");
+
+    return NextResponse.json({ image: `data:image/png;base64,${resultBase64}` });
 
   } catch (err) {
     return NextResponse.json({ error: "Sunucu hatası: " + (err as Error).message }, { status: 500 });
