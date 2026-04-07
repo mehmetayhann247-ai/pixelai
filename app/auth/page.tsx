@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
 
 export default function Auth() {
@@ -8,6 +9,16 @@ export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
+
+useEffect(() => {
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (session) {
+      router.push("/");
+    }
+  });
+}, []);
 
   const handleAuth = async () => {
     setLoading(true);
@@ -27,7 +38,7 @@ export default function Auth() {
   const handleGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: "https://pixelai-eta.vercel.app/auth" }
+      options: { redirectTo: "https://pixelai-eta.vercel.app" }
     });
   };
 
