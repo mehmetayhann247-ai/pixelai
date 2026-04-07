@@ -15,27 +15,38 @@ export async function POST(request: NextRequest) {
     const mimeType = imageFile.type;
     const dataUrl = `data:${mimeType};base64,${base64}`;
 
-    const response = await fetch("https://api.replicate.com/v1/models/nightmareai/real-esrgan/predictions", {
+    // Prediction oluştur
+    const createRes = await fetch("https://api.replicate.com/v1/predictions", {
       method: "POST",
       headers: {
         "Authorization": `Token ${process.env.REPLICATE_API_TOKEN}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        version: "42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b",
         input: {
           image: dataUrl,
-          scale: 4,
+          scale: 2,
           face_enhance: false,
         }
       }),
     });
 
-    const prediction = await response.json();
-    
-    // Sonucu bekle
+    const prediction = await createRes.json();
+
+    if (!prediction.id) {
+      return NextResponse.json({ error: "Model başlatılamadı" }, { status: 500 });
+    }
+
+    // Sonucu bekle — max 55 saniye
     let result = prediction;
+    const startTime = Date.now();
+    
     while (result.status !== "succeeded" && result.status !== "failed") {
-      await new Promise(r => setTimeout(r, 1000));
+      if (Date.now() - startTime > 55000) {
+        return NextResponse.json({ error: "Zaman aşımı — tekrar dene" }, { status: 408 });
+      }
+      await new Promise(r => setTimeout(r, 2000));
       const poll = await fetch(`https://api.replicate.com/v1/predictions/${result.id}`, {
         headers: { "Authorization": `Token ${process.env.REPLICATE_API_TOKEN}` }
       });
@@ -48,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ image: result.output });
 
-  } catch {
-    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  } catch (err) {
+    return NextResponse.json({ error: "Sunucu hatası: " + err }, { status: 500 });
   }
 }
