@@ -131,11 +131,11 @@ export default function RemoveBg() {
               style={{ position: "relative", borderRadius: "16px", overflow: "hidden", cursor: "ew-resize", userSelect: "none", maxHeight: "500px" }}
             >
               {/* Sonuç (arka plan kaldırılmış) */}
-              <img src={result} style={{ width: "100%", display: "block", background: "repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 20px 20px" }} />
+              <img src={result} style={{ width: "100%", maxHeight: "500px", objectFit: "contain", display: "block", background: "repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 20px 20px" }} />
 
               {/* Orijinal — üstüne clip ile */}
               <div style={{ position: "absolute", top: 0, left: 0, width: `${sliderPos}%`, height: "100%", overflow: "hidden" }}>
-                <img src={preview} style={{ width: sliderRef.current?.offsetWidth + "px", maxWidth: "none", display: "block" }} />
+                <img src={preview} style={{ width: sliderRef.current?.offsetWidth + "px", maxHeight: "500px", objectFit: "contain", maxWidth: "none", display: "block" }} />
               </div>
 
               {/* Kaydırıcı çizgi */}
