@@ -37,9 +37,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ image: result.output });
     }
 
-    return NextResponse.json({ error: "İşlem başarısız" }, { status: 500 });
+    return NextResponse.json({ error: "İşlem başarısız: " + JSON.stringify(result) }, { status: 500 });
 
   } catch (err) {
-    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası: " + (err as Error).message }, { status: 500 });
   }
 }
