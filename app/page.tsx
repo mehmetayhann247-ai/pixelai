@@ -74,6 +74,11 @@ export default function Home() {
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           {user ? (
             <>
+              <a href="/dashboard" style={{
+                color: "#a78bfa", textDecoration: "none", fontSize: "14px",
+                border: "1px solid rgba(167,139,250,0.3)", borderRadius: "8px",
+                padding: "8px 16px"
+              }}>📊 Dashboard</a>
               <span style={{ color: "#a78bfa", fontSize: "14px" }}>{user.email}</span>
               <button onClick={handleLogout} style={{
                 background: "transparent", color: "#ef4444", border: "1px solid #ef4444",
