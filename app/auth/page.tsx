@@ -9,16 +9,15 @@ export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
   const router = useRouter();
 
-useEffect(() => {
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (session) {
-      router.push("/");
-    }
-  });
-}, []);
+  useEffect(() => {
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        router.push("/");
+      }
+    });
+  }, []);
 
   const handleAuth = async () => {
     setLoading(true);
@@ -26,7 +25,6 @@ useEffect(() => {
     if (isLogin) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setMessage("❌ " + error.message);
-      else setMessage("✅ Giriş başarılı! Hoş geldin!");
     } else {
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) setMessage("❌ " + error.message);
@@ -40,6 +38,11 @@ useEffect(() => {
       provider: "google",
       options: { redirectTo: "https://pixelai-eta.vercel.app" }
     });
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setMessage("✅ Çıkış yapıldı!");
   };
 
   return (
@@ -81,6 +84,11 @@ useEffect(() => {
             {isLogin ? "Kayıt ol" : "Giriş yap"}
           </span>
         </p>
+
+        <button onClick={handleLogout}
+          style={{ width: "100%", padding: "14px", background: "#dc2626", color: "white", border: "none", borderRadius: "8px", fontSize: "16px", cursor: "pointer", marginTop: "16px" }}>
+          Çıkış Yap
+        </button>
       </div>
     </main>
   );
