@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
+import { supabase } from "../lib/supabase";
 
 export default function RemoveBg() {
   const [image, setImage] = useState<File | null>(null);
@@ -30,7 +31,14 @@ export default function RemoveBg() {
     formData.append("image", image);
     const res = await fetch("/api/remove-bg", { method: "POST", body: formData });
     const data = await res.json();
-    if (data.image) setResult(`data:image/png;base64,${data.image}`);
+    if (data.image) {
+      setResult(`data:image/png;base64,${data.image}`);
+      const { data: session } = await supabase.auth.getSession();
+      const userId = session?.session?.user?.id;
+      if (userId) {
+        await supabase.from("operations").insert({ user_id: userId, type: "remove-bg" });
+      }
+    }
     setLoading(false);
   };
 
