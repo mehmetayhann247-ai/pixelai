@@ -10,56 +10,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Fotoğraf bulunamadı" }, { status: 400 });
     }
 
-    const bytes = await imageFile.arrayBuffer();
-    const base64 = Buffer.from(bytes).toString("base64");
-    const mimeType = imageFile.type;
-    const dataUrl = `data:${mimeType};base64,${base64}`;
+    const imageBuffer = await imageFile.arrayBuffer();
+    const imageBlob = new Blob([imageBuffer], { type: imageFile.type });
 
-    // Prediction oluştur
-    const createRes = await fetch("https://api.replicate.com/v1/predictions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Token ${process.env.REPLICATE_API_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        version: "42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b",
-        input: {
-          image: dataUrl,
-          scale: 2,
-          face_enhance: false,
-        }
-      }),
-    });
-
-    const prediction = await createRes.json();
-
-    if (!prediction.id) {
-      return NextResponse.json({ error: "Model başlatılamadı" }, { status: 500 });
-    }
-
-    // Sonucu bekle — max 55 saniye
-    let result = prediction;
-    const startTime = Date.now();
-    
-    while (result.status !== "succeeded" && result.status !== "failed") {
-      if (Date.now() - startTime > 55000) {
-        return NextResponse.json({ error: "Zaman aşımı — tekrar dene" }, { status: 408 });
+    const response = await fetch(
+      "https://router.huggingface.co/replicate/models/nightmareai/real-esrgan/predictions",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          input: {
+            image: `data:${imageFile.type};base64,${Buffer.from(imageBuffer).toString("base64")}`,
+            scale: 2,
+            face_enhance: false,
+          }
+        }),
       }
-      await new Promise(r => setTimeout(r, 2000));
-      const poll = await fetch(`https://api.replicate.com/v1/predictions/${result.id}`, {
-        headers: { "Authorization": `Token ${process.env.REPLICATE_API_TOKEN}` }
-      });
-      result = await poll.json();
+    );
+
+    const result = await response.json();
+
+    if (result.output) {
+      return NextResponse.json({ image: result.output });
     }
 
-    if (result.status === "failed") {
-      return NextResponse.json({ error: "İşlem başarısız" }, { status: 500 });
-    }
-
-    return NextResponse.json({ image: result.output });
+    return NextResponse.json({ error: "İşlem başarısız" }, { status: 500 });
 
   } catch (err) {
-    return NextResponse.json({ error: "Sunucu hatası: " + err }, { status: 500 });
+    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
   }
 }
