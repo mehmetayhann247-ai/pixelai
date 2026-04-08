@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const base64 = Buffer.from(imageBuffer).toString("base64");
 
     const response = await fetch(
-      "https://router.huggingface.co/hf-inference/models/caidas/swin2SR-classical-sr-x2-64",
+      "https://router.huggingface.co/hf-inference/models/caidas/swin2SR-realworld-sr-x4-large-PSNR-DF2K-s64w8-SwinIR-M-x4-GAN",
       {
         method: "POST",
         headers: {
