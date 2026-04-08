@@ -10,44 +10,33 @@ export async function POST(request: NextRequest) {
     }
 
     const bytes = await imageFile.arrayBuffer();
-    const base64 = Buffer.from(bytes).toString("base64");
-    const dataUrl = `data:${imageFile.type};base64,${base64}`;
+    const blob = new Blob([bytes], { type: imageFile.type });
 
-    // Önce prediction oluştur
-    const response = await fetch("https://api.replicate.com/v1/predictions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.REPLICATE_API_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        version: "3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
-        input: {
-          input_image: dataUrl,
-          motion_bucket_id: 127,
-          fps: 25,
-          decoding_t: 14,
-          sizing_strategy: "maintain_aspect_ratio"
-        }
-      })
-    });
+    const hfForm = new FormData();
+    hfForm.append("inputs", blob, imageFile.name);
 
-    const data = await response.json();
-    console.log("Replicate response:", JSON.stringify(data));
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/stabilityai/stable-video-diffusion-img2vid-xt",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+        },
+        body: hfForm,
+      }
+    );
 
-    if (data.error) {
-      return NextResponse.json({ error: data.error }, { status: 500 });
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("HF Error:", errText);
+      return NextResponse.json({ error: "Video oluşturulamadı: " + errText }, { status: 500 });
     }
 
-    if (data.output && data.output[0]) {
-      return NextResponse.json({ video: data.output[0] });
-    }
+    const videoBuffer = await response.arrayBuffer();
+    const base64 = Buffer.from(videoBuffer).toString("base64");
+    const videoUrl = `data:video/mp4;base64,${base64}`;
 
-    if (data.id) {
-      return NextResponse.json({ predictionId: data.id });
-    }
-
-    return NextResponse.json({ error: "Video oluşturulamadı" }, { status: 500 });
+    return NextResponse.json({ video: videoUrl });
 
   } catch (err: any) {
     console.error("Error:", err);
