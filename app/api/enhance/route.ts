@@ -11,10 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     const imageBuffer = await imageFile.arrayBuffer();
-    const blob = new Blob([imageBuffer], { type: imageFile.type });
-
-    const hfForm = new FormData();
-    hfForm.append("inputs", blob, imageFile.name);
+    const base64 = Buffer.from(imageBuffer).toString("base64");
 
     const response = await fetch(
       "https://router.huggingface.co/hf-inference/models/caidas/swin2SR-classical-sr-x2-64",
@@ -22,26 +19,29 @@ export async function POST(request: NextRequest) {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+          "Content-Type": imageFile.type,
         },
-        body: hfForm,
+        body: imageBuffer,
       }
     );
 
-    const responseText = await response.text();
-    console.log("HF Status:", response.status);
-    console.log("HF Response:", responseText);
+    console.log("Status:", response.status);
+    console.log("Content-Type:", response.headers.get("content-type"));
 
     if (!response.ok) {
-      return NextResponse.json({ error: "Hata " + response.status + ": " + responseText }, { status: 500 });
+      const txt = await response.text();
+      console.log("Error:", txt);
+      return NextResponse.json({ error: txt }, { status: 500 });
     }
 
-    const imageData = Buffer.from(responseText, "binary");
-    const base64 = imageData.toString("base64");
-    const dataUrl = `data:image/png;base64,${base64}`;
+    const resultBuffer = await response.arrayBuffer();
+    const resultBase64 = Buffer.from(resultBuffer).toString("base64");
+    const contentType = response.headers.get("content-type") || "image/png";
+    const dataUrl = `data:${contentType};base64,${resultBase64}`;
 
     return NextResponse.json({ image: dataUrl });
 
   } catch (err) {
-    return NextResponse.json({ error: "Sunucu hatası: " + (err as Error).message }, { status: 500 });
+    return NextResponse.json({ error: (err as Error).message }, { status: 500 });
   }
 }
