@@ -4,7 +4,6 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const imageFile = formData.get("image") as File;
-    const prompt = formData.get("prompt") as string || "cinematic motion, smooth animation";
 
     if (!imageFile) {
       return NextResponse.json({ error: "Resim bulunamadı" }, { status: 400 });
@@ -14,23 +13,31 @@ export async function POST(request: NextRequest) {
     const base64 = Buffer.from(bytes).toString("base64");
     const dataUrl = `data:${imageFile.type};base64,${base64}`;
 
-    const response = await fetch("https://api.replicate.com/v1/models/stability-ai/stable-video-diffusion/versions/3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438/predictions", {
+    // Önce prediction oluştur
+    const response = await fetch("https://api.replicate.com/v1/predictions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.REPLICATE_API_TOKEN}`,
         "Content-Type": "application/json",
-        "Prefer": "wait"
       },
       body: JSON.stringify({
+        version: "3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
         input: {
           input_image: dataUrl,
           motion_bucket_id: 127,
-          fps: 25
+          fps: 25,
+          decoding_t: 14,
+          sizing_strategy: "maintain_aspect_ratio"
         }
       })
     });
 
     const data = await response.json();
+    console.log("Replicate response:", JSON.stringify(data));
+
+    if (data.error) {
+      return NextResponse.json({ error: data.error }, { status: 500 });
+    }
 
     if (data.output && data.output[0]) {
       return NextResponse.json({ video: data.output[0] });
@@ -42,7 +49,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: "Video oluşturulamadı" }, { status: 500 });
 
-  } catch {
-    return NextResponse.json({ error: "Sunucu hatası" }, { status: 500 });
+  } catch (err: any) {
+    console.error("Error:", err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
