@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
+  const [isPro, setIsPro] = useState(false);
   const [operations, setOperations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -12,6 +13,8 @@ export default function Dashboard() {
       const u = data.session?.user;
       if (!u) { window.location.href = "/auth"; return; }
       setUser(u);
+      const { data: profile } = await supabase.from("profiles").select("is_pro").eq("id", u.id).single();
+      setIsPro(profile?.is_pro ?? false);
       const { data: ops } = await supabase
         .from("operations")
         .select("*")
@@ -54,6 +57,13 @@ export default function Dashboard() {
       }}>
         <a href="/" style={{ fontSize: "20px", fontWeight: "800", color: "white", textDecoration: "none" }}>✨ PixelAI</a>
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          {isPro && (
+            <span style={{
+              color: "#fbbf24", fontSize: "14px",
+              border: "1px solid rgba(251,191,36,0.3)", borderRadius: "8px",
+              padding: "8px 16px", background: "rgba(251,191,36,0.1)"
+            }}>⭐ Pro Üye</span>
+          )}
           <span style={{ color: "#a78bfa", fontSize: "14px" }}>{user?.email}</span>
           <button onClick={handleLogout} style={{
             background: "transparent", color: "#ef4444", border: "1px solid #ef4444",
@@ -67,10 +77,29 @@ export default function Dashboard() {
         {/* Hoşgeldin */}
         <div style={{ marginBottom: "40px" }}>
           <h1 style={{ fontSize: "32px", fontWeight: "900", marginBottom: "8px" }}>
-            👋 Hoş geldin!
+            👋 Hoş geldin! {isPro && <span style={{ color: "#fbbf24", fontSize: "20px" }}>⭐ Pro</span>}
           </h1>
           <p style={{ color: "#9ca3af" }}>{user?.email}</p>
         </div>
+
+        {/* Pro Banner */}
+        {!isPro && (
+          <div style={{
+            background: "rgba(124,58,237,0.15)", border: "1px solid #7c3aed",
+            borderRadius: "16px", padding: "20px 24px", marginBottom: "32px",
+            display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px"
+          }}>
+            <div>
+              <div style={{ fontWeight: "700", marginBottom: "4px" }}>💎 Pro'ya geç — Sınırsız işlem yap!</div>
+              <div style={{ color: "#9ca3af", fontSize: "14px" }}>Aylık sadece $9.99 ile tüm özelliklere eriş</div>
+            </div>
+            <a href="/pricing" style={{
+              background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+              color: "white", padding: "10px 24px", borderRadius: "10px",
+              textDecoration: "none", fontSize: "15px", fontWeight: "600"
+            }}>Pro'ya Geç →</a>
+          </div>
+        )}
 
         {/* İstatistik Kartları */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginBottom: "40px" }}>
@@ -103,7 +132,7 @@ export default function Dashboard() {
               background: "rgba(255,255,255,0.08)", color: "#9ca3af",
               padding: "12px 24px", borderRadius: "10px",
               textDecoration: "none", fontSize: "15px", fontWeight: "600",
-              border: "1px solid #333", cursor: "not-allowed"
+              border: "1px solid #333"
             }}>📸 Netleştir (Yakında)</a>
           </div>
         </div>
