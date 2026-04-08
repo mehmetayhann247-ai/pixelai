@@ -79,6 +79,11 @@ export default function Home() {
                 border: "1px solid rgba(167,139,250,0.3)", borderRadius: "8px",
                 padding: "8px 16px"
               }}>📊 Dashboard</a>
+              <a href="/pricing" style={{
+  color: "#10b981", textDecoration: "none", fontSize: "14px",
+  border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px",
+  padding: "8px 16px"
+}}>💎 Pro'ya Geç</a>
               <span style={{ color: "#a78bfa", fontSize: "14px" }}>{user.email}</span>
               <button onClick={handleLogout} style={{
                 background: "transparent", color: "#ef4444", border: "1px solid #ef4444",
