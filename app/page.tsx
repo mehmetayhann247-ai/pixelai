@@ -4,11 +4,17 @@ import { supabase } from "./lib/supabase";
 
 export default function Home() {
   const [user, setUser] = useState<any>(null);
+  const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
-    });
+    supabase.auth.getSession().then(async ({ data }) => {
+  const u = data.session?.user ?? null;
+  setUser(u);
+  if (u) {
+    const { data: profile } = await supabase.from("profiles").select("is_pro").eq("id", u.id).single();
+    setIsPro(profile?.is_pro ?? false);
+  }
+});
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
@@ -79,11 +85,19 @@ export default function Home() {
                 border: "1px solid rgba(167,139,250,0.3)", borderRadius: "8px",
                 padding: "8px 16px"
               }}>📊 Dashboard</a>
-              <a href="/pricing" style={{
-  color: "#10b981", textDecoration: "none", fontSize: "14px",
-  border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px",
-  padding: "8px 16px"
-}}>💎 Pro'ya Geç</a>
+              {isPro ? (
+  <span style={{
+    color: "#fbbf24", fontSize: "14px",
+    border: "1px solid rgba(251,191,36,0.3)", borderRadius: "8px",
+    padding: "8px 16px", background: "rgba(251,191,36,0.1)"
+  }}>⭐ Pro Üye</span>
+) : (
+  <a href="/pricing" style={{
+    color: "#10b981", textDecoration: "none", fontSize: "14px",
+    border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px",
+    padding: "8px 16px"
+  }}>💎 Pro'ya Geç</a>
+)}
               <span style={{ color: "#a78bfa", fontSize: "14px" }}>{user.email}</span>
               <button onClick={handleLogout} style={{
                 background: "transparent", color: "#ef4444", border: "1px solid #ef4444",
