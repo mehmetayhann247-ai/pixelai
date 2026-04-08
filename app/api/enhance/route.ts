@@ -27,13 +27,16 @@ export async function POST(request: NextRequest) {
       }
     );
 
+    const responseText = await response.text();
+    console.log("HF Status:", response.status);
+    console.log("HF Response:", responseText);
+
     if (!response.ok) {
-      const errText = await response.text();
-      return NextResponse.json({ error: "Hata: " + errText }, { status: 500 });
+      return NextResponse.json({ error: "Hata " + response.status + ": " + responseText }, { status: 500 });
     }
 
-    const imageData = await response.arrayBuffer();
-    const base64 = Buffer.from(imageData).toString("base64");
+    const imageData = Buffer.from(responseText, "binary");
+    const base64 = imageData.toString("base64");
     const dataUrl = `data:image/png;base64,${base64}`;
 
     return NextResponse.json({ image: dataUrl });
