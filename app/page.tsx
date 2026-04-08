@@ -8,13 +8,13 @@ export default function Home() {
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data }) => {
-  const u = data.session?.user ?? null;
-  setUser(u);
-  if (u) {
-    const { data: profile } = await supabase.from("profiles").select("is_pro").eq("id", u.id).single();
-    setIsPro(profile?.is_pro ?? false);
-  }
-});
+      const u = data.session?.user ?? null;
+      setUser(u);
+      if (u) {
+        const { data: profile } = await supabase.from("profiles").select("is_pro").eq("id", u.id).single();
+        setIsPro(profile?.is_pro ?? false);
+      }
+    });
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
@@ -36,6 +36,22 @@ export default function Home() {
       ready: true,
     },
     {
+      icon: "🎬",
+      title: "Resimden Video",
+      desc: "Fotoğrafını yapay zeka ile videoya dönüştür",
+      color: "#dc2626",
+      href: "/image-to-video",
+      ready: true,
+    },
+    {
+      icon: "✍️",
+      title: "Yazıdan Video",
+      desc: "Ne istediğini yaz, AI videoyu oluştursun",
+      color: "#a855f7",
+      href: "/text-to-video",
+      ready: true,
+    },
+    {
       icon: "📸",
       title: "Fotoğraf Netleştir",
       desc: "Bulanık fotoğrafları 4 kat netleştir",
@@ -48,14 +64,6 @@ export default function Home() {
       title: "AI Filtreler",
       desc: "Yapay zeka ile sanatsal filtreler uygula",
       color: "#059669",
-      href: "#",
-      ready: false,
-    },
-    {
-      icon: "🎬",
-      title: "Video Upscale",
-      desc: "Videolarını HD kaliteye yükselt",
-      color: "#dc2626",
       href: "#",
       ready: false,
     },
@@ -86,18 +94,18 @@ export default function Home() {
                 padding: "8px 16px"
               }}>📊 Dashboard</a>
               {isPro ? (
-  <span style={{
-    color: "#fbbf24", fontSize: "14px",
-    border: "1px solid rgba(251,191,36,0.3)", borderRadius: "8px",
-    padding: "8px 16px", background: "rgba(251,191,36,0.1)"
-  }}>⭐ Pro Üye</span>
-) : (
-  <a href="/pricing" style={{
-    color: "#10b981", textDecoration: "none", fontSize: "14px",
-    border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px",
-    padding: "8px 16px"
-  }}>💎 Pro'ya Geç</a>
-)}
+                <span style={{
+                  color: "#fbbf24", fontSize: "14px",
+                  border: "1px solid rgba(251,191,36,0.3)", borderRadius: "8px",
+                  padding: "8px 16px", background: "rgba(251,191,36,0.1)"
+                }}>⭐ Pro Üye</span>
+              ) : (
+                <a href="/pricing" style={{
+                  color: "#10b981", textDecoration: "none", fontSize: "14px",
+                  border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px",
+                  padding: "8px 16px"
+                }}>💎 Pro'ya Geç</a>
+              )}
               <span style={{ color: "#a78bfa", fontSize: "14px" }}>{user.email}</span>
               <button onClick={handleLogout} style={{
                 background: "transparent", color: "#ef4444", border: "1px solid #ef4444",
@@ -128,10 +136,10 @@ export default function Home() {
           background: "linear-gradient(135deg, #fff 0%, #a78bfa 100%)",
           WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
         }}>
-          Fotoğraflarını AI ile<br />Güçlendir
+          Fotoğraf ve Videolarını<br />AI ile Güçlendir
         </h1>
         <p style={{ fontSize: "18px", color: "#9ca3af", marginBottom: "40px", maxWidth: "500px", margin: "0 auto 40px" }}>
-          Arka plan kaldır, netleştir, filtrele — saniyeler içinde, ücretsiz başla.
+          Arka plan kaldır, videoya dönüştür, filtrele — saniyeler içinde, ücretsiz başla.
         </p>
         <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
           <button onClick={() => window.location.href = user ? "/remove-bg" : "/auth"} style={{
@@ -153,12 +161,12 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section id="features" style={{ padding: "60px 20px", maxWidth: "1000px", margin: "0 auto" }}>
+      <section id="features" style={{ padding: "60px 20px", maxWidth: "1100px", margin: "0 auto" }}>
         <h2 style={{ textAlign: "center", fontSize: "32px", fontWeight: "800", marginBottom: "48px" }}>
           Neler Yapabilirsin?
         </h2>
         <div style={{
-          display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px"
+          display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px"
         }}>
           {features.map((f) => (
             <div key={f.title}
