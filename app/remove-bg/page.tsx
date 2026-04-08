@@ -9,12 +9,14 @@ export default function RemoveBg() {
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [sliderPos, setSliderPos] = useState(50);
+  const [limitError, setLimitError] = useState("");
   const sliderRef = useRef<HTMLDivElement>(null);
 
   const handleFile = (file: File) => {
     setImage(file);
     setPreview(URL.createObjectURL(file));
     setResult("");
+    setLimitError("");
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -27,14 +29,26 @@ export default function RemoveBg() {
   const handleSubmit = async () => {
     if (!image) return;
     setLoading(true);
+    setLimitError("");
+
+    const { data: session } = await supabase.auth.getSession();
+    const userId = session?.session?.user?.id;
+
     const formData = new FormData();
     formData.append("image", image);
+    if (userId) formData.append("userId", userId);
+
     const res = await fetch("/api/remove-bg", { method: "POST", body: formData });
     const data = await res.json();
+
+    if (data.limitReached) {
+      setLimitError(data.error);
+      setLoading(false);
+      return;
+    }
+
     if (data.image) {
       setResult(`data:image/png;base64,${data.image}`);
-      const { data: session } = await supabase.auth.getSession();
-      const userId = session?.session?.user?.id;
       if (userId) {
         await supabase.from("operations").insert({ user_id: userId, type: "remove-bg" });
       }
@@ -77,14 +91,32 @@ export default function RemoveBg() {
           }}>🖼️ AI Destekli</div>
           <h1 style={{ fontSize: "40px", fontWeight: "900", marginBottom: "12px" }}>Arka Plan Kaldır</h1>
           <p style={{ color: "#9ca3af", fontSize: "17px" }}>Fotoğrafını yükle, yapay zeka arka planı saniyeler içinde siler</p>
-<div style={{
-  display: "inline-block", background: "rgba(234,179,8,0.1)",
-  border: "1px solid rgba(234,179,8,0.4)", borderRadius: "10px",
-  padding: "10px 20px", fontSize: "13px", color: "#fbbf24", marginTop: "12px"
-}}>
-  💡 İpucu: En iyi sonuç için tek bir kişi, hayvan veya ürün içeren fotoğraf kullanın
-</div>
+          <div style={{
+            display: "inline-block", background: "rgba(234,179,8,0.1)",
+            border: "1px solid rgba(234,179,8,0.4)", borderRadius: "10px",
+            padding: "10px 20px", fontSize: "13px", color: "#fbbf24", marginTop: "12px"
+          }}>
+            💡 İpucu: En iyi sonuç için tek bir kişi, hayvan veya ürün içeren fotoğraf kullanın
+          </div>
         </div>
+
+        {/* Limit Hatası */}
+        {limitError && (
+          <div style={{
+            background: "rgba(239,68,68,0.1)", border: "1px solid #ef4444",
+            borderRadius: "16px", padding: "20px 24px", marginBottom: "24px",
+            textAlign: "center"
+          }}>
+            <div style={{ fontSize: "24px", marginBottom: "8px" }}>🚫</div>
+            <div style={{ fontWeight: "700", marginBottom: "8px" }}>{limitError}</div>
+            <a href="/pricing" style={{
+              background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+              color: "white", padding: "10px 24px", borderRadius: "10px",
+              textDecoration: "none", fontSize: "15px", fontWeight: "600",
+              display: "inline-block", marginTop: "8px"
+            }}>💎 Pro'ya Geç →</a>
+          </div>
+        )}
 
         {/* Yükleme alanı */}
         {!preview && (
@@ -145,15 +177,10 @@ export default function RemoveBg() {
               onMouseMove={handleSliderMove}
               style={{ position: "relative", borderRadius: "16px", overflow: "hidden", cursor: "ew-resize", userSelect: "none", maxHeight: "500px" }}
             >
-              {/* Sonuç (arka plan kaldırılmış) */}
               <img src={result} style={{ width: "100%", maxHeight: "500px", objectFit: "contain", display: "block", background: "repeating-conic-gradient(#333 0% 25%, #222 0% 50%) 0 0 / 20px 20px" }} />
-
-              {/* Orijinal — üstüne clip ile */}
               <div style={{ position: "absolute", top: 0, left: 0, width: `${sliderPos}%`, height: "100%", overflow: "hidden", background: "#111" }}>
-  <img src={preview} style={{ width: sliderRef.current?.offsetWidth + "px", maxHeight: "500px", objectFit: "contain", maxWidth: "none", display: "block" }} />
-</div>
-
-              {/* Kaydırıcı çizgi */}
+                <img src={preview} style={{ width: sliderRef.current?.offsetWidth + "px", maxHeight: "500px", objectFit: "contain", maxWidth: "none", display: "block" }} />
+              </div>
               <div style={{
                 position: "absolute", top: 0, left: `${sliderPos}%`, transform: "translateX(-50%)",
                 width: "3px", height: "100%", background: "white", boxShadow: "0 0 10px rgba(0,0,0,0.5)"
@@ -165,13 +192,9 @@ export default function RemoveBg() {
                   boxShadow: "0 2px 12px rgba(0,0,0,0.4)"
                 }}>↔️</div>
               </div>
-
-              {/* Etiketler */}
               <div style={{ position: "absolute", top: "12px", left: "12px", background: "rgba(0,0,0,0.6)", borderRadius: "6px", padding: "4px 10px", fontSize: "12px" }}>Orijinal</div>
               <div style={{ position: "absolute", top: "12px", right: "12px", background: "rgba(124,58,237,0.8)", borderRadius: "6px", padding: "4px 10px", fontSize: "12px" }}>Sonuç</div>
             </div>
-
-            {/* Butonlar */}
             <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginTop: "24px", flexWrap: "wrap" }}>
               <button onClick={() => { setPreview(""); setResult(""); setImage(null); }} style={{
                 background: "transparent", color: "#a78bfa", border: "1px solid #a78bfa",
