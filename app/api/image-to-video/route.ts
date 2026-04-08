@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const base64 = Buffer.from(bytes).toString("base64");
     const dataUrl = `data:${imageFile.type};base64,${base64}`;
 
-    const response = await fetch("https://api.replicate.com/v1/models/stability-ai/stable-video-diffusion/predictions", {
+    const response = await fetch("https://api.replicate.com/v1/models/stability-ai/stable-video-diffusion/versions/3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438/predictions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.REPLICATE_API_TOKEN}`,
