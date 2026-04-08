@@ -10,36 +10,39 @@ export async function POST(request: NextRequest) {
     }
 
     const bytes = await imageFile.arrayBuffer();
-    const blob = new Blob([bytes], { type: imageFile.type });
-
-    const hfForm = new FormData();
-    hfForm.append("inputs", blob, imageFile.name);
+    const base64 = Buffer.from(bytes).toString("base64");
+    const dataUrl = `data:${imageFile.type};base64,${base64}`;
 
     const response = await fetch(
-      "https://api-inference.huggingface.co/models/stabilityai/stable-video-diffusion-img2vid-xt",
+      "https://router.huggingface.co/fal-ai/stable-video-diffusion",
       {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+          "Content-Type": "application/json",
         },
-        body: hfForm,
+        body: JSON.stringify({
+          image_url: dataUrl,
+          motion_bucket_id: 127,
+          fps: 25,
+        }),
       }
     );
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("HF Error:", errText);
-      return NextResponse.json({ error: "Video oluşturulamadı: " + errText }, { status: 500 });
+    const data = await response.json();
+    console.log("HF Response:", JSON.stringify(data));
+
+    if (data.video?.url) {
+      return NextResponse.json({ video: data.video.url });
     }
 
-    const videoBuffer = await response.arrayBuffer();
-    const base64 = Buffer.from(videoBuffer).toString("base64");
-    const videoUrl = `data:video/mp4;base64,${base64}`;
+    if (data.url) {
+      return NextResponse.json({ video: data.url });
+    }
 
-    return NextResponse.json({ video: videoUrl });
+    return NextResponse.json({ error: "Video oluşturulamadı: " + JSON.stringify(data) }, { status: 500 });
 
   } catch (err: any) {
-    console.error("Error:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
