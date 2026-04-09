@@ -27,48 +27,16 @@ export default function Home() {
   };
 
   const features = [
-    {
-      icon: "🖼️",
-      title: "Arka Plan Kaldır",
-      desc: "Fotoğrafından arka planı saniyeler içinde sil",
-      color: "#7c3aed",
-      href: "/remove-bg",
-      ready: true,
-    },
-    {
-      icon: "🎬",
-      title: "Resimden Video",
-      desc: "Fotoğrafını yapay zeka ile videoya dönüştür",
-      color: "#dc2626",
-      href: "/image-to-video",
-      ready: true,
-    },
-    {
-      icon: "✍️",
-      title: "Yazıdan Video",
-      desc: "Ne istediğini yaz, AI videoyu oluştursun",
-      color: "#a855f7",
-      href: "/text-to-video",
-      ready: true,
-    },
-    {
-  icon: "📸",
-  title: "Fotoğraf Netleştir",
-  desc: "Bulanık fotoğrafları 4 kat netleştir",
-  color: "#2563eb",
-  href: "/enhance",
-  ready: true,
-},
-    {
-      icon: "🎨",
-      title: "AI Filtreler",
-      desc: "Yapay zeka ile sanatsal filtreler uygula",
-      color: "#059669",
-      href: "#",
-      ready: false,
-    },
+    { icon: "🖼️", title: "Arka Plan Kaldır", desc: "Fotoğrafından arka planı saniyeler içinde sil", color: "#7c3aed", href: "/remove-bg", ready: true },
+    { icon: "🎬", title: "Resimden Video", desc: "Fotoğrafını yapay zeka ile videoya dönüştür", color: "#dc2626", href: "/image-to-video", ready: true },
+    { icon: "✍️", title: "Yazıdan Video", desc: "Ne istediğini yaz, AI videoyu oluştursun", color: "#a855f7", href: "/text-to-video", ready: true },
+    { icon: "📸", title: "Fotoğraf Netleştir", desc: "Bulanık fotoğrafları 4 kat netleştir", color: "#2563eb", href: "/enhance", ready: true },
+    { icon: "🎌", title: "Anime'ye Dönüştür", desc: "Fotoğrafını anime stiline dönüştür", color: "#7c3aed", href: "/anime", ready: true },
+    { icon: "🎨", title: "Cartoon'a Dönüştür", desc: "Fotoğrafını çizgi film stiline dönüştür", color: "#eab308", href: "/cartoon", ready: true },
+    { icon: "🖼️", title: "AI Resim Oluştur", desc: "Ne hayal ediyorsan yaz, AI resme dönüştürsün", color: "#059669", href: "/text-to-image", ready: true },
+    { icon: "🕰️", title: "Eski Fotoğraf Restore", desc: "Eski ve hasarlı fotoğraflarını AI ile restore et", color: "#eab308", href: "/restore", ready: true },
+    { icon: "🌙", title: "Gece Fotoğrafı Aydınlat", desc: "Karanlık fotoğraflarını AI ile aydınlat", color: "#f59e0b", href: "/brighten", ready: true },
   ];
-
   return (
     <main style={{
       minHeight: "100vh",
